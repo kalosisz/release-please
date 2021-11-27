@@ -109,6 +109,7 @@ interface GraphQLRelease {
   url: string;
   description: string;
   isDraft: boolean;
+  isPrerelease: boolean;
 }
 
 interface CommitHistory {
@@ -155,6 +156,7 @@ export interface GitHubRelease {
   notes?: string;
   url: string;
   draft?: boolean;
+  prerelease?: boolean;
 }
 
 export interface GitHubTag {
@@ -641,6 +643,7 @@ export class GitHub {
               url
               description
               isDraft
+              isPrerelease
             }
             pageInfo {
               endCursor
@@ -674,6 +677,7 @@ export class GitHub {
             notes: release.description,
             url: release.url,
             draft: release.isDraft,
+            prerelease: release.isPrerelease,
           };
         }),
     };
@@ -1201,7 +1205,7 @@ export class GitHub {
   createRelease = wrapAsync(
     async (
       release: Release,
-      options: {draft?: boolean} = {}
+      options: {draft?: boolean; prerelease?: boolean} = {}
     ): Promise<GitHubRelease> => {
       const resp = await this.octokit.repos.createRelease({
         owner: this.repository.owner,
@@ -1210,6 +1214,7 @@ export class GitHub {
         body: release.notes,
         sha: release.sha,
         draft: !!options.draft,
+        prerelease: !!options.prerelease,
       });
       return {
         name: resp.data.name || undefined,
@@ -1218,6 +1223,7 @@ export class GitHub {
         notes: resp.data.body_text,
         url: resp.data.html_url,
         draft: resp.data.draft,
+        prerelease: resp.data.prerelease,
       };
     },
     e => {
