@@ -93,7 +93,12 @@ function mockPullRequests(
 
 function mockCreateRelease(
   github: GitHub,
-  releases: {sha: string; tagName: string; draft?: boolean, prerelease?: boolean}[]
+  releases: {
+    sha: string;
+    tagName: string;
+    draft?: boolean;
+    prerelease?: boolean;
+  }[]
 ) {
   const releaseStub = sandbox.stub(github, 'createRelease');
   for (const {sha, tagName, draft, prerelease} of releases) {
@@ -110,7 +115,7 @@ function mockCreateRelease(
         url: 'https://path/to/release',
         notes: 'some release notes',
         draft,
-        prerelease
+        prerelease,
       });
   }
 }
