@@ -623,7 +623,6 @@ describe('GitHub', () => {
     expect(release.prerelease).to.be.true;
   });
 
-
   describe('commentOnIssue', () => {
     it('can create a comment', async () => {
       const createCommentResponse = JSON.parse(
