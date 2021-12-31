@@ -228,7 +228,6 @@ export class Manifest {
     this.labels = manifestOptions?.labels || DEFAULT_LABELS;
     this.bootstrapSha = manifestOptions?.bootstrapSha;
     this.lastReleaseSha = manifestOptions?.lastReleaseSha;
-    this.draft = manifestOptions?.draft;
     this.draftPullRequest = manifestOptions?.draftPullRequest;
   }
 
@@ -714,7 +713,7 @@ export class Manifest {
             ...release,
             path,
             pullRequest,
-            draft: config.draft ?? this.draft,
+            draft: config.draft,
           });
         }
       }
