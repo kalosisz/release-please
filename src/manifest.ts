@@ -507,7 +507,7 @@ export class Manifest {
       const releasePullRequest = await strategy.buildReleasePullRequest(
         pathCommits,
         latestRelease,
-        config.draftPullRequest ?? this.draftPullRequest,
+        this.draftPullRequest ?? config.draftPullRequest,
         this.labels
       );
       if (releasePullRequest) {
@@ -714,7 +714,7 @@ export class Manifest {
             ...release,
             path,
             pullRequest,
-            draft: config.draft ?? this.draft,
+            draft: this.draft ?? config.draft,
           });
         }
       }

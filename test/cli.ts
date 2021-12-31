@@ -126,7 +126,7 @@ describe('CLI', () => {
         'main',
         DEFAULT_RELEASE_PLEASE_CONFIG,
         DEFAULT_RELEASE_PLEASE_MANIFEST,
-        sinon.match.any
+        sinon.match({draftPullRequest: undefined})
       );
       sinon.assert.calledOnce(createPullRequestsStub);
     });
@@ -236,26 +236,26 @@ describe('CLI', () => {
       );
       sinon.assert.calledOnce(createPullRequestsStub);
     });
-    // it('handles --draft', async () => {
-    //   await parser.parseAsync(
-    //     'manifest-pr --repo-url=googleapis/release-please-cli --draft'
-    //   );
+    it('handles --draft-pull-request', async () => {
+      await parser.parseAsync(
+        'manifest-pr --repo-url=googleapis/release-please-cli --draft-pull-request'
+      );
 
-    //   sinon.assert.calledOnceWithExactly(gitHubCreateStub, {
-    //     owner: 'googleapis',
-    //     repo: 'release-please-cli',
-    //     token: undefined,
-    //   });
-    //   sinon.assert.calledOnceWithExactly(
-    //     fromManifestStub,
-    //     fakeGitHub,
-    //     'main',
-    //     DEFAULT_RELEASE_PLEASE_CONFIG,
-    //     DEFAULT_RELEASE_PLEASE_MANIFEST,
-    //     {draft: true},
-    //   );
-    //   sinon.assert.calledOnce(createPullRequestsStub);
-    // });
+      sinon.assert.calledOnceWithExactly(gitHubCreateStub, {
+        owner: 'googleapis',
+        repo: 'release-please-cli',
+        token: undefined,
+      });
+      sinon.assert.calledOnceWithExactly(
+        fromManifestStub,
+        fakeGitHub,
+        'main',
+        DEFAULT_RELEASE_PLEASE_CONFIG,
+        DEFAULT_RELEASE_PLEASE_MANIFEST,
+        sinon.match({draftPullRequest: true})
+      );
+      sinon.assert.calledOnce(createPullRequestsStub);
+    });
     it('handles --signoff', async () => {
       await parser.parseAsync(
         'manifest-pr --repo-url=googleapis/release-please-cli --signoff="Alice <alice@example.com>"'
@@ -316,7 +316,7 @@ describe('CLI', () => {
         'main',
         DEFAULT_RELEASE_PLEASE_CONFIG,
         DEFAULT_RELEASE_PLEASE_MANIFEST,
-        sinon.match.any
+        sinon.match({draft: undefined})
       );
       sinon.assert.calledOnce(createReleasesStub);
     });
@@ -485,7 +485,7 @@ describe('CLI', () => {
           'main',
           DEFAULT_RELEASE_PLEASE_CONFIG,
           DEFAULT_RELEASE_PLEASE_MANIFEST,
-          sinon.match.any
+          sinon.match({draftPullRequest: undefined})
         );
         sinon.assert.calledOnce(createPullRequestsStub);
       });
@@ -592,7 +592,7 @@ describe('CLI', () => {
           fakeGitHub,
           'main',
           sinon.match({releaseType: 'java-yoshi'}),
-          sinon.match.any,
+          sinon.match({draftPullRequest: undefined}),
           undefined
         );
         sinon.assert.calledOnce(createPullRequestsStub);
@@ -847,8 +847,8 @@ describe('CLI', () => {
           fromConfigStub,
           fakeGitHub,
           'main',
-          sinon.match({releaseType: 'java-yoshi', draftPullRequest: true}),
-          sinon.match.any,
+          sinon.match({releaseType: 'java-yoshi'}),
+          sinon.match({draftPullRequest: true}),
           undefined
         );
         sinon.assert.calledOnce(createPullRequestsStub);
@@ -1000,7 +1000,7 @@ describe('CLI', () => {
           'main',
           DEFAULT_RELEASE_PLEASE_CONFIG,
           DEFAULT_RELEASE_PLEASE_MANIFEST,
-          sinon.match.any
+          sinon.match({draft: undefined})
         );
         sinon.assert.calledOnce(createReleasesStub);
       });
@@ -1154,7 +1154,7 @@ describe('CLI', () => {
           fakeGitHub,
           'main',
           sinon.match({releaseType: 'java-yoshi'}),
-          sinon.match.any,
+          sinon.match({draft: undefined}),
           undefined
         );
         sinon.assert.calledOnce(createReleasesStub);
@@ -1196,8 +1196,8 @@ describe('CLI', () => {
           fromConfigStub,
           fakeGitHub,
           'main',
-          sinon.match({releaseType: 'java-yoshi', draft: true}),
-          sinon.match.any,
+          sinon.match({releaseType: 'java-yoshi'}),
+          sinon.match({draft: true}),
           undefined
         );
         sinon.assert.calledOnce(createReleasesStub);

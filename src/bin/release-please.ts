@@ -192,7 +192,6 @@ function releaseOptions(yargs: yargs.Argv): yargs.Argv {
         'target_commitish are associated with the release for future ' +
         'tag creation upon "un-drafting" the release.',
       type: 'boolean',
-      default: false,
     })
     .option('label', {
       default: 'autorelease: pending',
@@ -220,7 +219,6 @@ function pullRequestOptions(yargs: yargs.Argv): yargs.Argv {
     .option('draft-pull-request', {
       describe: 'mark pull request as a draft',
       type: 'boolean',
-      default: false,
     })
     .option('signoff', {
       describe:
@@ -395,6 +393,7 @@ const createReleasePullRequestCommand: yargs.CommandModule<
   async handler(argv) {
     const github = await buildGitHub(argv);
     const targetBranch = argv.targetBranch || github.repository.defaultBranch;
+    const manifestOptions = extractManifestOptions(argv);
     let manifest: Manifest;
     if (argv.releaseType) {
       manifest = await Manifest.fromConfig(
@@ -404,7 +403,6 @@ const createReleasePullRequestCommand: yargs.CommandModule<
           releaseType: argv.releaseType,
           component: argv.component,
           packageName: argv.packageName,
-          draftPullRequest: argv.draftPullRequest,
           bumpMinorPreMajor: argv.bumpMinorPreMajor,
           bumpPatchForMinorPreMajor: argv.bumpPatchForMinorPreMajor,
           changelogPath: argv.changelogPath,
@@ -417,11 +415,10 @@ const createReleasePullRequestCommand: yargs.CommandModule<
           versionFile: argv.versionFile,
           includeComponentInTag: argv.monorepoTags,
         },
-        extractManifestOptions(argv),
+        manifestOptions,
         argv.path
       );
     } else {
-      const manifestOptions = extractManifestOptions(argv);
       manifest = await Manifest.fromManifest(
         github,
         targetBranch,
@@ -472,6 +469,7 @@ const createReleaseCommand: yargs.CommandModule<{}, CreateReleaseArgs> = {
       argv.targetBranch ||
       argv.defaultBranch ||
       github.repository.defaultBranch;
+    const manifestOptions = extractManifestOptions(argv);
     let manifest: Manifest;
     if (argv.releaseType) {
       manifest = await Manifest.fromConfig(
@@ -481,14 +479,12 @@ const createReleaseCommand: yargs.CommandModule<{}, CreateReleaseArgs> = {
           releaseType: argv.releaseType,
           component: argv.component,
           packageName: argv.packageName,
-          draft: argv.draft,
           includeComponentInTag: argv.monorepoTags,
         },
         extractManifestOptions(argv),
         argv.path
       );
     } else {
-      const manifestOptions = extractManifestOptions(argv);
       manifest = await Manifest.fromManifest(
         github,
         targetBranch,

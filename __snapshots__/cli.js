@@ -46,8 +46,7 @@ Options:
   --draft                       mark release as a draft. no tag is created but
                                 tag_name and target_commitish are associated
                                 with the release for future tag creation upon
-                                "un-drafting" the release.
-                                                      [boolean] [default: false]
+                                "un-drafting" the release.             [boolean]
   --label                       comma-separated list of labels to remove to from
                                 release PR     [default: "autorelease: pending"]
   --release-label               set a pull request label other than
@@ -82,7 +81,7 @@ Options:
                                                [default: "autorelease: pending"]
   --fork                should the PR be created from a fork
                                                       [boolean] [default: false]
-  --draft-pull-request  mark pull request as a draft  [boolean] [default: false]
+  --draft-pull-request  mark pull request as a draft                   [boolean]
   --signoff             Add Signed-off-by line at the end of the commit log
                         message using the user and email provided. (format "Name
                         <email@example.com>").                          [string]
@@ -117,8 +116,7 @@ Options:
   --dry-run         Prepare but do not take action    [boolean] [default: false]
   --draft           mark release as a draft. no tag is created but tag_name and
                     target_commitish are associated with the release for future
-                    tag creation upon "un-drafting" the release.
-                                                      [boolean] [default: false]
+                    tag creation upon "un-drafting" the release.       [boolean]
   --label           comma-separated list of labels to remove to from release PR
                                                [default: "autorelease: pending"]
   --release-label   set a pull request label other than "autorelease: tagged"
@@ -189,8 +187,7 @@ Options:
                                                [default: "autorelease: pending"]
   --fork                            should the PR be created from a fork
                                                       [boolean] [default: false]
-  --draft-pull-request              mark pull request as a draft
-                                                      [boolean] [default: false]
+  --draft-pull-request              mark pull request as a draft       [boolean]
   --signoff                         Add Signed-off-by line at the end of the
                                     commit log message using the user and email
                                     provided. (format "Name
