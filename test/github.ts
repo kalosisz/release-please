@@ -513,23 +513,6 @@ describe('GitHub', () => {
       expect(drafts).eq(1);
     });
 
-    it('correctly identifies prerelease releases', async () => {
-      const graphql = JSON.parse(
-        readFileSync(resolve(fixturesPath, 'releases.json'), 'utf8')
-      );
-      req.post('/graphql').reply(200, {
-        data: graphql,
-      });
-      const generator = github.releaseIterator();
-      let prereleases = 0;
-      for await (const release of generator) {
-        if (release.draft) {
-          prereleases++;
-        }
-      }
-      expect(prereleases).eq(1);
-    });
-
     it('iterates through a result withouth releases', async () => {
       req.post('/graphql').reply(200, {
         data: {
