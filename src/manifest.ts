@@ -141,7 +141,9 @@ export interface ManifestConfig extends ReleaserConfigJson {
   'separate-pull-requests'?: boolean;
 }
 // path => version
-export type ReleasedVersions = Record<string, Version>;
+type ReleasedVersions = Record<string, Version>;
+// path => strategy
+type StrategiesByPath = Record<string, Strategy>;
 // path => config
 export type RepositoryConfig = Record<string, ReleaserConfig>;
 
@@ -174,9 +176,9 @@ export class Manifest {
   private labels: string[];
   private releaseLabels: string[];
   private plugins: PluginType[];
-  private _strategiesByPath?: Record<string, Strategy>;
+  private _strategiesByPath?: StrategiesByPath;
   private _pathsByComponent?: Record<string, string>;
-  private manifestPath: string;
+  private manifestPath?: string;
   private bootstrapSha?: string;
   private lastReleaseSha?: string;
   private draft?: boolean;
@@ -220,8 +222,7 @@ export class Manifest {
     this.targetBranch = targetBranch;
     this.repositoryConfig = repositoryConfig;
     this.releasedVersions = releasedVersions;
-    this.manifestPath =
-      manifestOptions?.manifestPath || DEFAULT_RELEASE_PLEASE_MANIFEST;
+    this.manifestPath = manifestOptions?.manifestPath;
     this.separatePullRequests =
       manifestOptions?.separatePullRequests ??
       Object.keys(repositoryConfig).length === 1;
@@ -343,14 +344,16 @@ export class Manifest {
     logger.info('Building pull requests');
     const pathsByComponent = await this.getPathsByComponent();
     const strategiesByPath = await this.getStrategiesByPath();
+    const stableReleasedVersions = await this.getStableReleasedVersions();
 
     // Collect all the SHAs of the latest release packages
     logger.info('Collecting release commit SHAs');
     let releasesFound = 0;
     const expectedReleases = Object.keys(strategiesByPath).length;
 
-    // SHAs by path
-    const releaseShasByPath: Record<string, string> = {};
+    // refefence SHAs by path - not necessarily the same as the latest release
+    // if prerelease is considered, take the latest stable release
+    const referenceShasByPath: Record<string, string> = {};
 
     // Releases by path
     const releasesByPath: Record<string, Release> = {};
@@ -371,22 +374,29 @@ export class Manifest {
         );
         continue;
       }
-      const expectedVersion = this.releasedVersions[path];
-      if (!expectedVersion) {
+      const expectedLastVersion = this.releasedVersions[path];
+      const expectedStableVersion =
+        stableReleasedVersions[path] ?? expectedLastVersion;
+      if (!expectedLastVersion && !expectedStableVersion) {
         logger.warn(
           `Unable to find expected version for path '${path}' in manifest`
         );
         continue;
       }
-      if (expectedVersion.toString() === tagName.version.toString()) {
+      if (expectedLastVersion.toString() === tagName.version.toString()) {
         logger.debug(`Found release for path ${path}, ${release.tagName}`);
-        releaseShasByPath[path] = release.sha;
         releasesByPath[path] = {
           name: release.name,
           tag: tagName,
           sha: release.sha,
           notes: release.notes || '',
         };
+      }
+      if (expectedStableVersion.toString() === tagName.version.toString()) {
+        logger.debug(
+          `Found stable release for path ${path}, ${release.tagName}`
+        );
+        referenceShasByPath[path] = release.sha;
         releasesFound += 1;
       }
 
@@ -418,7 +428,7 @@ export class Manifest {
       maxResults: 500,
       backfillFiles: true,
     });
-    const releaseShas = new Set(Object.values(releaseShasByPath));
+    const releaseShas = new Set(Object.values(referenceShasByPath));
     logger.debug(releaseShas);
     const expectedShas = releaseShas.size;
 
@@ -479,7 +489,7 @@ export class Manifest {
       logger.debug(`targetBranch: ${this.targetBranch}`);
       const pathCommits = commitsAfterSha(
         path === ROOT_PROJECT_PATH ? commits : commitsPerPath[path],
-        releaseShasByPath[path]
+        referenceShasByPath[path]
       );
       if (!pathCommits || pathCommits.length === 0) {
         logger.info(`No commits for path: ${path}, skipping`);
@@ -487,7 +497,7 @@ export class Manifest {
       }
       logger.debug(`commits: ${pathCommits.length}`);
       const latestReleasePullRequest =
-        releasePullRequestsBySha[releaseShasByPath[path]];
+        releasePullRequestsBySha[referenceShasByPath[path]];
       if (!latestReleasePullRequest) {
         logger.warn('No latest release pull request found.');
       }
@@ -517,7 +527,8 @@ export class Manifest {
         this.labels
       );
       if (releasePullRequest) {
-        if (releasePullRequest.version) {
+        if (this.manifestPath && releasePullRequest.version) {
+          // update manifest if path provided
           const versionsMap: VersionsMap = new Map();
           versionsMap.set(path, releasePullRequest.version);
           releasePullRequest.updates.push({
@@ -528,6 +539,23 @@ export class Manifest {
               versionsMap,
             }),
           });
+          if (
+            (config.prerelease ?? this.prerelease) &&
+            releasePullRequest.version.preRelease
+          ) {
+            // if prerelease is enabled
+            // save stable version in a separate file
+            const stableVersionsMap: VersionsMap = new Map();
+            stableVersionsMap.set(path, latestRelease.tag.version);
+            releasePullRequest.updates.push({
+              path: this.stableManifestPath!,
+              createIfMissing: true,
+              updater: new ReleasePleaseManifest({
+                version: latestRelease.tag.version,
+                versionsMap: stableVersionsMap,
+              }),
+            });
+          }
         }
         newReleasePullRequests.push({
           path,
@@ -806,7 +834,7 @@ export class Manifest {
     };
   }
 
-  private async getStrategiesByPath(): Promise<Record<string, Strategy>> {
+  private async getStrategiesByPath(): Promise<StrategiesByPath> {
     if (!this._strategiesByPath) {
       logger.info('Building strategies by path');
       this._strategiesByPath = {};
@@ -841,6 +869,58 @@ export class Manifest {
       }
     }
     return this._pathsByComponent;
+  }
+
+  /**
+   * Method for getting stable released versions if prerelease is set
+   * for a path or an empty object
+   *
+   * @returns {Promise<ReleasedVersions>} stable relase versions or empty object
+   */
+  private async getStableReleasedVersions(): Promise<ReleasedVersions> {
+    let stableReleasedVersions: ReleasedVersions = {};
+    let storedStableReleasedVersions: ReleasedVersions = {};
+    if (this.manifestPath) {
+      storedStableReleasedVersions = await parseReleasedVersions(
+        this.github,
+        this.stableManifestPath!,
+        this.targetBranch
+      );
+    }
+    for (const path in this.repositoryConfig) {
+      const config = this.repositoryConfig[path];
+      const prerelease = config.prerelease && this.prerelease;
+      if (prerelease) {
+        if (storedStableReleasedVersions[path]) {
+          stableReleasedVersions[path] = storedStableReleasedVersions[path];
+        } else if (!this.manifestPath) {
+          const strategiesByPath = await this.getStrategiesByPath();
+          const component = await strategiesByPath[path].getComponent();
+          const latestStableVersion = await latestReleaseVersion(
+            this.github,
+            this.targetBranch,
+            config.includeComponentInTag ? component : '',
+            config.pullRequestTitlePattern,
+            prerelease
+          );
+          if (latestStableVersion) {
+            stableReleasedVersions[path] = latestStableVersion;
+          }
+        }
+      }
+    }
+    return stableReleasedVersions;
+  }
+
+  private get stableManifestPath(): string | undefined {
+    if (this.manifestPath) {
+      const FILE_PATTERN = /^(?<FILE>.*)(?<EXT>\.json)$/;
+      const match = this.manifestPath.match(FILE_PATTERN);
+      if (match?.groups) {
+        return `${match.groups.FILE}-stable${match.groups.EXT}`;
+      }
+    }
+    return undefined;
   }
 }
 
@@ -919,15 +999,18 @@ async function parseReleasedVersions(
   manifestFile: string,
   branch: string
 ): Promise<ReleasedVersions> {
-  const manifestJson = await github.getFileJson<Record<string, string>>(
-    manifestFile,
-    branch
-  );
   const releasedVersions: ReleasedVersions = {};
-  for (const path in manifestJson) {
-    releasedVersions[path] = Version.parse(manifestJson[path]);
+  try {
+    const manifestJson = await github.getFileJson<Record<string, string>>(
+      manifestFile,
+      branch
+    );
+    for (const path in manifestJson) {
+      releasedVersions[path] = Version.parse(manifestJson[path]);
+    }
+  } finally {
+    return releasedVersions;
   }
-  return releasedVersions;
 }
 
 /**
@@ -942,7 +1025,8 @@ async function latestReleaseVersion(
   github: GitHub,
   targetBranch: string,
   prefix?: string,
-  pullRequestTitlePattern?: string
+  pullRequestTitlePattern?: string,
+  skipPrerelease?: boolean
 ): Promise<Version | undefined> {
   const branchPrefix = prefix
     ? prefix.endsWith('-')
@@ -989,6 +1073,10 @@ async function latestReleaseVersion(
     }
 
     const version = pullRequestTitle.getVersion();
+    if (skipPrerelease && version?.preRelease) {
+      continue;
+    }
+
     if (version?.preRelease?.includes('SNAPSHOT')) {
       // FIXME, don't hardcode this
       continue;
@@ -1004,6 +1092,10 @@ async function latestReleaseVersion(
   for await (const release of releaseGenerator) {
     const tagName = TagName.parse(release.tagName);
     if (!tagName) {
+      continue;
+    }
+
+    if (skipPrerelease && tagName.version.preRelease) {
       continue;
     }
 
@@ -1035,6 +1127,10 @@ async function latestReleaseVersion(
   for await (const tag of tagGenerator) {
     const tagName = TagName.parse(tag.name);
     if (!tagName) {
+      continue;
+    }
+
+    if (skipPrerelease && tagName.version.preRelease) {
       continue;
     }
 
