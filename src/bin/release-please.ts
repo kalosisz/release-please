@@ -209,6 +209,7 @@ function releaseOptions(yargs: yargs.Argv): yargs.Argv {
         'mark release that have prerelease versions ' +
         'as as a prerelease on Github',
       type: 'boolean',
+      default: false,
     })
     .option('label', {
       default: 'autorelease: pending',
