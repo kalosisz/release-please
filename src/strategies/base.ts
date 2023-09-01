@@ -644,7 +644,7 @@ export abstract class BaseStrategy implements Strategy {
   }
 
   isPublishedVersion(version: Version): boolean {
-    return !!this.prerelease || !version.preRelease
+    return (this.prerelease ?? true) || !version.preRelease;
   }
 
   /**
