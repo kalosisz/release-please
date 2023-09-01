@@ -19,7 +19,17 @@ import {VersionUpdater, CustomVersionUpdate} from '../versioning-strategy';
 
 const PRERELEASE_PATTERN = /^(?<type>[a-z]+)(?<number>\d+)$/;
 
-class PrereleasePatchVersionUpdate implements VersionUpdater {
+abstract class AbstractPrereleaseVersionUpdate implements VersionUpdater {
+  readonly prereleaseType?: string;
+
+  constructor(prereleaseType?: string) {
+      this.prereleaseType = prereleaseType;
+  }
+
+  abstract bump(version: Version): Version;
+}
+
+class PrereleasePatchVersionUpdate extends AbstractPrereleaseVersionUpdate {
   /**
    * Returns the new bumped version
    *
@@ -50,13 +60,13 @@ class PrereleasePatchVersionUpdate implements VersionUpdater {
       version.major,
       version.minor,
       version.patch + 1,
-      version.preRelease,
+      this.prereleaseType,
       version.build
     );
   }
 }
 
-class PrereleaseMinorVersionUpdate implements VersionUpdater {
+class PrereleaseMinorVersionUpdate extends AbstractPrereleaseVersionUpdate {
   /**
    * Returns the new bumped version
    *
@@ -98,13 +108,13 @@ class PrereleaseMinorVersionUpdate implements VersionUpdater {
       version.major,
       version.minor + 1,
       0,
-      version.preRelease,
+      this.prereleaseType,
       version.build
     );
   }
 }
 
-class PrereleaseMajorVersionUpdate implements VersionUpdater {
+class PrereleaseMajorVersionUpdate extends AbstractPrereleaseVersionUpdate {
   /**
    * Returns the new bumped version
    *
@@ -148,7 +158,7 @@ class PrereleaseMajorVersionUpdate implements VersionUpdater {
       version.major + 1,
       0,
       0,
-      version.preRelease,
+      this.prereleaseType,
       version.build
     );
   }
@@ -187,17 +197,17 @@ export class PrereleaseVersioningStrategy extends DefaultVersioningStrategy {
 
     if (breaking > 0) {
       if (version.major < 1 && this.bumpMinorPreMajor) {
-        return new PrereleaseMinorVersionUpdate();
+        return new PrereleaseMinorVersionUpdate(this.prereleaseType);
       } else {
-        return new PrereleaseMajorVersionUpdate();
+        return new PrereleaseMajorVersionUpdate(this.prereleaseType);
       }
     } else if (features > 0) {
       if (version.major < 1 && this.bumpPatchForMinorPreMajor) {
-        return new PrereleasePatchVersionUpdate();
+        return new PrereleasePatchVersionUpdate(this.prereleaseType);
       } else {
-        return new PrereleaseMinorVersionUpdate();
+        return new PrereleaseMinorVersionUpdate(this.prereleaseType);
       }
     }
-    return new PrereleasePatchVersionUpdate();
+    return new PrereleasePatchVersionUpdate(this.prereleaseType);
   }
 }

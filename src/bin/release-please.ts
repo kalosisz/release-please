@@ -63,6 +63,7 @@ interface ManifestArgs {
 interface VersioningArgs {
   bumpMinorPreMajor?: boolean;
   bumpPatchForMinorPreMajor?: boolean;
+  prereleaseType?: string;
   releaseAs?: string;
 
   // only for Ruby: TODO replace with generic bootstrap option
@@ -208,7 +209,6 @@ function releaseOptions(yargs: yargs.Argv): yargs.Argv {
         'mark release that have prerelease versions ' +
         'as as a prerelease on Github',
       type: 'boolean',
-      default: false,
     })
     .option('label', {
       default: 'autorelease: pending',
@@ -275,6 +275,10 @@ function pullRequestStrategyOptions(yargs: yargs.Argv): yargs.Argv {
       default: false,
       type: 'boolean',
     })
+      .option('prerelease-type', {
+        describe: 'type of the prerelease, e.g., alpha',
+        type: 'string',
+      })
     .option('extra-files', {
       describe: 'extra files for the strategy to consider',
       type: 'string',
@@ -447,6 +451,7 @@ const createReleasePullRequestCommand: yargs.CommandModule<
           draftPullRequest: argv.draftPullRequest,
           bumpMinorPreMajor: argv.bumpMinorPreMajor,
           bumpPatchForMinorPreMajor: argv.bumpPatchForMinorPreMajor,
+          prereleaseType: argv.prereleaseType,
           changelogPath: argv.changelogPath,
           changelogType: argv.changelogType,
           changelogHost: argv.changelogHost,
