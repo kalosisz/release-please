@@ -94,6 +94,7 @@ export interface ReleaserConfig {
   versioning?: VersioningStrategyType;
   bumpMinorPreMajor?: boolean;
   bumpPatchForMinorPreMajor?: boolean;
+  prereleaseType?: string;
 
   // Strategy options
   releaseAs?: string;
@@ -1262,6 +1263,7 @@ function extractReleaserConfig(
     releaseType: config['release-type'],
     bumpMinorPreMajor: config['bump-minor-pre-major'],
     bumpPatchForMinorPreMajor: config['bump-patch-for-minor-pre-major'],
+    prereleaseType: config['prerelease-type'],
     versioning: config['versioning'],
     changelogSections: config['changelog-sections'],
     changelogPath: config['changelog-path'],
@@ -1607,6 +1609,7 @@ function mergeReleaserConfig(
     bumpPatchForMinorPreMajor:
       pathConfig.bumpPatchForMinorPreMajor ??
       defaultConfig.bumpPatchForMinorPreMajor,
+    prereleaseType: pathConfig.prereleaseType ?? defaultConfig.prereleaseType,
     versioning: pathConfig.versioning ?? defaultConfig.versioning,
     changelogSections:
       pathConfig.changelogSections ?? defaultConfig.changelogSections,
