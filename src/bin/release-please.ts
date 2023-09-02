@@ -276,10 +276,10 @@ function pullRequestStrategyOptions(yargs: yargs.Argv): yargs.Argv {
       default: false,
       type: 'boolean',
     })
-      .option('prerelease-type', {
-        describe: 'type of the prerelease, e.g., alpha',
-        type: 'string',
-      })
+    .option('prerelease-type', {
+      describe: 'type of the prerelease, e.g., alpha',
+      type: 'string',
+    })
     .option('extra-files', {
       describe: 'extra files for the strategy to consider',
       type: 'string',
