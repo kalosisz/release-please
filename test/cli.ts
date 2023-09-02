@@ -841,7 +841,7 @@ describe('CLI', () => {
 
       it('handles --prerelease-type', async () => {
         await parser.parseAsync(
-            'release-pr --repo-url=googleapis/release-please-cli --release-type=java-yoshi --prerelease-type=alpha'
+          'release-pr --repo-url=googleapis/release-please-cli --release-type=java-yoshi --prerelease-type=alpha'
         );
 
         sinon.assert.calledOnceWithExactly(gitHubCreateStub, {
@@ -852,15 +852,15 @@ describe('CLI', () => {
           graphqlUrl: 'https://api.github.com',
         });
         sinon.assert.calledOnceWithExactly(
-            fromConfigStub,
-            fakeGitHub,
-            'main',
-            sinon.match({
-              releaseType: 'java-yoshi',
-              prereleaseType: 'alpha',
-            }),
-            sinon.match.any,
-            undefined
+          fromConfigStub,
+          fakeGitHub,
+          'main',
+          sinon.match({
+            releaseType: 'java-yoshi',
+            prereleaseType: 'alpha',
+          }),
+          sinon.match.any,
+          undefined
         );
         sinon.assert.calledOnce(createPullRequestsStub);
       });
