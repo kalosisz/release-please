@@ -717,6 +717,7 @@ const bootstrapCommand: yargs.CommandModule<{}, BootstrapArgs> = {
       draftPullRequest: argv.draftPullRequest,
       bumpMinorPreMajor: argv.bumpMinorPreMajor,
       bumpPatchForMinorPreMajor: argv.bumpPatchForMinorPreMajor,
+      prereleaseType: argv.prereleaseType,
       changelogPath: argv.changelogPath,
       changelogHost: argv.changelogHost,
       changelogSections: argv.changelogSections,

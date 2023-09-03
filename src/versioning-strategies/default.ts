@@ -92,13 +92,13 @@ export class DefaultVersioningStrategy implements VersioningStrategy {
     }
 
     if (breaking > 0) {
-      if (version.major < 1 && this.bumpMinorPreMajor) {
+      if (version.isPreMajor && this.bumpMinorPreMajor) {
         return new MinorVersionUpdate();
       } else {
         return new MajorVersionUpdate();
       }
     } else if (features > 0) {
-      if (version.major < 1 && this.bumpPatchForMinorPreMajor) {
+      if (version.isPreMajor && this.bumpPatchForMinorPreMajor) {
         return new PatchVersionUpdate();
       } else {
         return new MinorVersionUpdate();
