@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {verify} from 'crypto';
 import * as semver from 'semver';
 
 const VERSION_REGEX =
@@ -81,6 +82,10 @@ export class Version {
     const preReleasePart = this.preRelease ? `-${this.preRelease}` : '';
     const buildPart = this.build ? `+${this.build}` : '';
     return `${this.major}.${this.minor}.${this.patch}${preReleasePart}${buildPart}`;
+  }
+
+  get isPreMajor(): boolean {
+    return this.major < 1;
   }
 }
 

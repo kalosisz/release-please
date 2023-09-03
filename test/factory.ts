@@ -56,6 +56,7 @@ describe('factory', () => {
         strategy.versioningStrategy as DefaultVersioningStrategy;
       expect(versioningStrategy.bumpMinorPreMajor).to.be.false;
       expect(versioningStrategy.bumpPatchForMinorPreMajor).to.be.false;
+      expect(versioningStrategy.prereleaseType).to.be.undefined;
       expect(strategy.path).to.eql('.');
       expect(await strategy.getComponent()).not.ok;
       expect(strategy.changelogNotes).instanceof(DefaultChangelogNotes);
@@ -66,6 +67,7 @@ describe('factory', () => {
         releaseType: 'simple',
         bumpMinorPreMajor: true,
         bumpPatchForMinorPreMajor: true,
+        prereleaseType: 'alpha',
       });
       expect(strategy).instanceof(Simple);
       expect(strategy.versioningStrategy).instanceof(DefaultVersioningStrategy);
@@ -73,6 +75,7 @@ describe('factory', () => {
         strategy.versioningStrategy as DefaultVersioningStrategy;
       expect(versioningStrategy.bumpMinorPreMajor).to.be.true;
       expect(versioningStrategy.bumpPatchForMinorPreMajor).to.be.true;
+      expect(versioningStrategy.prereleaseType).to.eql('alpha');
     });
     it('should throw for unknown type', async () => {
       try {

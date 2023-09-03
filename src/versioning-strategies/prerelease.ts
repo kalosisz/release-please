@@ -178,13 +178,13 @@ export class PrereleaseVersioningStrategy extends DefaultVersioningStrategy {
     }
 
     if (breaking > 0) {
-      if (version.major < 1 && this.bumpMinorPreMajor) {
+      if (version.isPreMajor && this.bumpMinorPreMajor) {
         return new PrereleaseMinorVersionUpdate(this.prereleaseType);
       } else {
         return new PrereleaseMajorVersionUpdate(this.prereleaseType);
       }
     } else if (features > 0) {
-      if (version.major < 1 && this.bumpPatchForMinorPreMajor) {
+      if (version.isPreMajor && this.bumpPatchForMinorPreMajor) {
         return new PrereleasePatchVersionUpdate(this.prereleaseType);
       } else {
         return new PrereleaseMinorVersionUpdate(this.prereleaseType);
