@@ -60,7 +60,6 @@ export interface BaseStrategyOptions {
   component?: string;
   packageName?: string;
   versioningStrategy?: VersioningStrategy;
-  prerelease?: boolean;
   targetBranch: string;
   changelogPath?: string;
   changelogHost?: string;
@@ -96,7 +95,6 @@ export abstract class BaseStrategy implements Strategy {
   protected component?: string;
   private packageName?: string;
   readonly versioningStrategy: VersioningStrategy;
-  readonly prerelease?: boolean;
   protected targetBranch: string;
   protected repository: Repository;
   protected changelogPath: string;
@@ -127,7 +125,6 @@ export abstract class BaseStrategy implements Strategy {
     this.versioningStrategy =
       options.versioningStrategy ||
       new DefaultVersioningStrategy({logger: this.logger});
-    this.prerelease = options.prerelease;
     this.targetBranch = options.targetBranch;
     this.repository = options.github.repository;
     this.changelogPath = options.changelogPath || DEFAULT_CHANGELOG_PATH;
@@ -643,7 +640,7 @@ export abstract class BaseStrategy implements Strategy {
     return [];
   }
 
-  isPublishedVersion(version: Version): boolean {
+  isPublishedVersion(_version: Version): boolean {
     // todo: skip pre-releases
     return true;
   }
