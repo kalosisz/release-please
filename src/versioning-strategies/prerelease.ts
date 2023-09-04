@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {DefaultVersioningStrategy} from './default';
+import {
+  DefaultVersioningStrategyOptions,
+  DefaultVersioningStrategy,
+} from './default';
 import {Version} from '../version';
 import {ConventionalCommit} from '..';
 import {
@@ -21,6 +24,11 @@ import {
   MinorVersionUpdate,
   MajorVersionUpdate,
 } from '../versioning-strategy';
+
+interface PrereleaseVersioningStrategyOptions
+  extends DefaultVersioningStrategyOptions {
+  prereleaseType?: string;
+}
 
 const PRERELEASE_NUMBER = /(?<number>\d+)(?=\D*$)/;
 
@@ -152,6 +160,13 @@ class PrereleaseMajorVersionUpdate extends AbstractPrereleaseVersionUpdate {
  * Example: 1.2.3-beta01 -> 1.2.3-beta02.
  */
 export class PrereleaseVersioningStrategy extends DefaultVersioningStrategy {
+  readonly prereleaseType?: string;
+
+  constructor(options: PrereleaseVersioningStrategyOptions = {}) {
+    super(options);
+    this.prereleaseType = options.prereleaseType;
+  }
+
   determineReleaseType(
     version: Version,
     commits: ConventionalCommit[]
