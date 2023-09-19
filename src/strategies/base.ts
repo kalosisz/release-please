@@ -678,7 +678,6 @@ export abstract class BaseStrategy implements Strategy {
   }
 
   isPublishedVersion(_version: Version): boolean {
-    // todo: skip pre-releases
     return true;
   }
 
