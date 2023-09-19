@@ -88,8 +88,9 @@ describe('PrereleaseVersioningStrategy', () => {
       const expectedBumps: Record<string, string> = {
         '1.2.3': '2.0.0-beta',
         '0.1.2': '1.0.0-beta',
-        '1.0.0-beta': '1.0.0-beta.0',
-        '2.0.0-beta': '2.0.0-beta.0',
+        '1.0.0-alpha': '1.0.0-alpha.1',
+        '1.0.0-beta': '1.0.0-beta.1',
+        '2.0.0-beta': '2.0.0-beta.1',
         '1.0.1-beta': '2.0.0-beta',
         '1.1.0-beta': '2.0.0-beta',
         '1.1.1-beta': '2.0.0-beta',
@@ -195,10 +196,12 @@ describe('PrereleaseVersioningStrategy', () => {
       const expectedBumps: Record<string, string> = {
         '1.2.3': '1.3.0-beta',
         '0.1.2': '0.2.0-beta',
-        '1.0.0-beta': '1.0.0-beta.0',
-        '2.0.0-beta': '2.0.0-beta.0',
+        '1.0.0-alpha': '1.0.0-alpha.1',
+        '1.0.0-beta': '1.0.0-beta.1',
+        '2.0.0-beta': '2.0.0-beta.1',
         '1.0.1-beta': '1.1.0-beta',
-        '1.1.0-beta': '1.1.0-beta.0',
+        '1.1.0-alpha': '1.1.0-alpha.1',
+        '1.1.0-beta': '1.1.0-beta.1',
         '1.1.1-beta': '1.2.0-beta',
         '1.0.0-beta01': '1.0.0-beta02',
         '2.0.0-beta01': '2.0.0-beta02',
@@ -284,7 +287,8 @@ describe('PrereleaseVersioningStrategy', () => {
     describe('with prerelease type', () => {
       const expectedBumps: Record<string, string> = {
         '1.2.3': '1.2.4-beta',
-        '1.2.4-beta': '1.2.4-beta.0',
+        '1.2.4-alpha': '1.2.4-alpha.1',
+        '1.2.4-beta': '1.2.4-beta.1',
         '1.0.0-beta01': '1.0.0-beta02',
         '2.0.0-beta01': '2.0.0-beta02',
         '1.0.1-beta01': '1.0.1-beta02',

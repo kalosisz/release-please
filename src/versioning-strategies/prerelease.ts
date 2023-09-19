@@ -30,6 +30,10 @@ interface PrereleaseVersioningStrategyOptions
   prereleaseType?: string;
 }
 
+/**
+ * Regex to match the last set of numbers in a string
+ * Example: 1.2.3-beta01-01 -> 01
+ */
 const PRERELEASE_NUMBER = /(?<number>\d+)(?=\D*$)/;
 
 abstract class AbstractPrereleaseVersionUpdate implements VersionUpdater {
@@ -39,10 +43,21 @@ abstract class AbstractPrereleaseVersionUpdate implements VersionUpdater {
     this.prereleaseType = prereleaseType;
   }
 
+  /**
+   * Returns the new bumped prerelease version
+   *
+   * That is, if the current version is 1.2.3-beta01, the next prerelease version
+   * will be 1.2.3-beta02. If no number is found, the prerelease version will be
+   * 1.2.3-beta. If multiple numbers are found, the last set of numbers will be
+   * incremented, e.g. 1.2.3-beta01-01 -> 1.2.3-beta01-02.
+   *
+   * @param {prerelease} string The current version
+   * @returns {Version} The bumped version
+   */
   protected bumpPrerelease(prerelease: string): string {
     const match = prerelease.match(PRERELEASE_NUMBER);
 
-    let nextPrerelease = `${prerelease}.0`;
+    let nextPrerelease = `${prerelease}.1`;
 
     if (match?.groups) {
       const numberLength = match.groups.number.length;
